@@ -180,7 +180,7 @@ if mountpoint -q "${MOUNT_POINT}"; then
     echo "Mount succeeded."
     mount | grep " ${MOUNT_POINT} " || true
     df -T "${MOUNT_POINT}" || true
-    ls -la "${MOUNT_POINT}" | head -100 || true
+    find "${MOUNT_POINT}" -mindepth 1 -maxdepth 1 -print | head -100 || true
   } >> output/mount-command.txt 2>&1
 
   sleep "${POST_MOUNT_CAPTURE_SECONDS}"
