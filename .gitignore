@@ -1,0 +1,7 @@
+*.request.json
+aca-nfs-probe-*/
+aca-nfs-support-*/
+nfs-capture-*/
+output/
+output_*.zip
+trace.dat*

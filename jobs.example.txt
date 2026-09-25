@@ -1,0 +1,1 @@
+/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.App/jobs/<job-name>

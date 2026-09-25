@@ -1,0 +1,63 @@
+{
+  "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example-rg/providers/Microsoft.App/jobs/example-worker",
+  "name": "example-worker",
+  "type": "Microsoft.App/jobs",
+  "location": "eastus",
+  "properties": {
+    "environmentId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example-rg/providers/Microsoft.App/managedEnvironments/example-env",
+    "workloadProfileName": "D8",
+    "configuration": {
+      "triggerType": "Schedule",
+      "replicaTimeout": 1800,
+      "replicaRetryLimit": 1,
+      "scheduleTriggerConfig": {
+        "cronExpression": "*/30 * * * *",
+        "parallelism": 1,
+        "replicaCompletionCount": 1
+      }
+    },
+    "template": {
+      "containers": [
+        {
+          "name": "worker",
+          "image": "example.azurecr.io/private/worker:1",
+          "command": [
+            "/app/worker"
+          ],
+          "args": [
+            "--token",
+            "do-not-export"
+          ],
+          "env": [
+            {
+              "name": "PLAIN_SECRET",
+              "value": "do-not-export"
+            },
+            {
+              "name": "REFERENCED_SECRET",
+              "secretRef": "worker-secret"
+            }
+          ],
+          "resources": {
+            "cpu": 2,
+            "memory": "4Gi"
+          },
+          "volumeMounts": [
+            {
+              "volumeName": "data-vol",
+              "mountPath": "/data-vol"
+            }
+          ]
+        }
+      ],
+      "volumes": [
+        {
+          "name": "data-vol",
+          "storageType": "NfsAzureFile",
+          "storageName": "example-nfs",
+          "mountOptions": "vers=4.1,sec=sys"
+        }
+      ]
+    }
+  }
+}

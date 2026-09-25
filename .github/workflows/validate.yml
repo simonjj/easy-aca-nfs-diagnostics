@@ -1,0 +1,31 @@
+name: validate
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate PowerShell
+        shell: pwsh
+        run: |
+          ./tests/Test-AcaNfsDiagnostics.ps1
+          ./tests/Test-GuidedWorkflow.ps1
+
+      - name: Validate shell syntax
+        run: bash -n ./scripts/Run-NfsClientCapture.sh
+
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install --yes shellcheck
+
+      - name: Run ShellCheck
+        run: shellcheck ./scripts/Run-NfsClientCapture.sh

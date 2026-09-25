@@ -1,0 +1,34 @@
+Steps to collect the logs:
+--------------------------
+Copy nfsclientlogs.sh(Shell script) to linux machine where we need to collect logs.
+
+Dependencies:
+Install packages trace-cmd, zip and ss. If debian-based distro, please install zgrep.
+If using CaptureNetwork option (see below), install tcpdump.
+
+If issue can be easily reproduced:
+1) Open linux terminal or ssh to linux machine or the AKS node.
+2) Run the command "sudo bash" to gain root privileges.
+3) Cd to script location and run the command
+   "chmod +x ./nfsclientlogs.sh"
+4) Run the command
+   "./nfsclientlogs.sh v4 start"
+   (or)
+   "./nfsclientlogs.sh v4 start CaptureNetwork" (in case Microsoft instructs you to use this option)
+   (or)
+   In case the service is Azure NFSv3 blob service, replace v4 above with v3b.
+5) Repro the issue.
+6) Run "./nfsclientlogs.sh stop"
+7) Above command generates output_TIMESTAMP.zip
+8) Send the output_TIMESTAMP.zip file to Microsoft support against your support case.
+
+Important Note:
+1) Please make sure to run the "start" and "stop" commands from the same CWD (current working directory).
+2) Every time "stop" is run a new log bundle will be created, irrespective of whether a matching "start" was performed or not. Please make sure that you provide us the correct log bundle.
+
+Contents of Zip file:
+1) nfs_dmesg - System logs since the last reboot.
+2) nfs_trace - Output of trace-cmd, which contain the kernel event logs.
+3) os_details.txt - Info about the operating system, which will help developers to understand which features/fixes are missing. 
+4) nfs_traffic.pcap - network capture of NFS traffic in case CaptureNetwork option was used.
+

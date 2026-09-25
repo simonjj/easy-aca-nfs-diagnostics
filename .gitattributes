@@ -1,0 +1,3 @@
+* text=auto
+*.sh text eol=lf
+vendor/NfsDiagnostics/trace-nfsbpf text eol=lf
