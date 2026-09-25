@@ -37,6 +37,8 @@ pwsh .\scripts\Start-AcaNfsDiagnostics.ps1 `
 
 The probe remains deployed for additional reproduction attempts. Nothing deletes it automatically.
 
+With the defaults, allow roughly 10-15 minutes for three sequential 180-second probe executions, plus any time needed for the workload-profile node to scale from zero.
+
 ## Important diagnostic boundary
 
 Azure Container Apps mounts the NFS volume on the managed host before starting the container. ACA does not expose the host and does not support privileged containers with host-level access. Therefore:
