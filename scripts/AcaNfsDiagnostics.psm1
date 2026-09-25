@@ -284,7 +284,7 @@ while [ "${elapsed}" -lt __DURATION_SECONDS__ ]; do
   elapsed=$((elapsed + 10))
 done
 echo "ACA NFS probe completed at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-'@.Replace('__DURATION_SECONDS__', [string]$DurationSeconds)
+'@.Replace('__DURATION_SECONDS__', [string]$DurationSeconds).Replace("`r`n", "`n")
 
     $probeContainer = [ordered]@{
         name         = 'nfs-probe'

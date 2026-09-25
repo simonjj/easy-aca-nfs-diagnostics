@@ -52,6 +52,7 @@ Assert-Equal '/data-vol' $probe.properties.template.containers[0].volumeMounts[0
 Assert-Equal 'example-nfs' $probe.properties.template.volumes[0].storageName 'Storage reference was not preserved.'
 Assert-Equal 'vers=4.1,sec=sys' $probe.properties.template.volumes[0].mountOptions 'Mount options were not preserved.'
 Assert-Equal 'mcr.microsoft.com/azurelinux/base/core:3.0' $probe.properties.template.containers[0].image 'Unexpected probe image.'
+Assert-True (-not $probe.properties.template.containers[0].args[0].Contains("`r")) 'Probe shell script must use Linux LF line endings.'
 
 $normalized = Get-NormalizedAcaJob -Job $sourceJob
 $normalizedJson = $normalized | ConvertTo-Json -Depth 100
