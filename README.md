@@ -140,6 +140,72 @@ sudo ./scripts/Run-NfsClientCapture.sh \
 
 The wrapper starts network and kernel tracing before the first mount, attempts the mount with a timeout, and creates the canonical `output_<timestamp>.zip` bundle. Packet captures can contain file names and protocol metadata; transfer the ZIP only through the secure channel associated with the support case.
 
+### Capture timing is critical
+
+The packet capture and kernel trace cannot be reconstructed after the mount attempt. They must be running before the mount starts:
+
+```text
+Fresh or rebooted host
+  -> start packet and kernel tracing
+  -> trigger the first NFS mount
+  -> preserve the failed or successful state
+  -> stop tracing and create the ZIP
+```
+
+`Run-NfsClientCapture.sh` performs this sequence on a customer-controlled Linux host. If running the upstream collector manually, use the same working directory for `start` and `stop`:
+
+```bash
+sudo ./nfsclientlogs.sh v4 start CaptureNetwork
+# Reproduce the mount.
+sudo ./nfsclientlogs.sh stop
+```
+
+Running only `stop` after a failure produces an incomplete bundle because no packet or kernel trace was active during the original mount.
+
+### What remains available after a run
+
+If the same node is preserved and has not rebooted, some evidence can still be collected immediately after the run:
+
+- `dmesg` since the last reboot, subject to ring-buffer rotation;
+- OS, distribution, and kernel details;
+- current NFS client and RPC statistics;
+- current TCP 2049 socket state;
+- CSI/node logs that have not rotated;
+- the blocked `mount.nfs` process state and kernel wait channel, but only while the process is still present.
+
+The following cannot be recovered retroactively:
+
+- `nfs_traffic.pcap`;
+- the `trace-cmd` NFS trace;
+- a clean first-mount capture;
+- process stacks after the blocked process exits;
+- any node evidence after the node is scaled down, replaced, or rebooted.
+
+For a mount that is still hanging, preserve the node before draining or replacing it and collect:
+
+```bash
+date -u
+getent hosts mystorage.file.core.windows.net
+nc -vz mystorage.file.core.windows.net 2049
+ps -eo pid,stat,wchan:32,cmd | grep '[m]ount.nfs'
+ss -tanp | grep ':2049'
+cat /proc/net/rpc/nfs
+dmesg -T | tail -500
+```
+
+These post-failure commands are valuable, but they do not replace a packet capture and kernel trace that began before the mount.
+
+### Capturing the actual ACA node
+
+The customer cannot run these host commands from an ACA Job container. If the probe reproduces a mount timeout:
+
+1. Record the probe execution name and exact UTC start time.
+2. Do not delete the probe job.
+3. Contact Microsoft support immediately and ask them to preserve the managed node before scale-down or replacement.
+4. Ask support to collect the blocked `mount.nfs` stack/`wchan`, `dmesg`, NFS/RPC state, and a retry capture from the affected node.
+
+A capture from a customer-controlled VM or AKS node is a useful reference capture, but it is not a substitute for the affected ACA node's state.
+
 ## Explicit cleanup
 
 Probe jobs are not deleted automatically. Remove one only when it is no longer needed:
