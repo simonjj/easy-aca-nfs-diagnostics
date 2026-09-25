@@ -57,6 +57,7 @@ function global:az {
         if ($method -eq 'put') {
             $bodyPath = $arguments[$bodyIndex + 1].TrimStart('@')
             $body = Get-Content -Raw -Path $bodyPath | ConvertFrom-Json -Depth 100
+            $body.properties | Add-Member -MemberType NoteProperty -Name provisioningState -Value Succeeded -Force
             $global:MockProbeJob = [pscustomobject]@{
                 id = $probeJobId
                 name = 'example-worker-nfs-probe'

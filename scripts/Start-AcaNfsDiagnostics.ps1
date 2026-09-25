@@ -177,6 +177,7 @@ if ($PSCmdlet.ShouldProcess($probeResourceId, 'Create or update and run ACA NFS 
         '--url', $probeUrl,
         '--body', "@$probeRequestPath"
     )
+    $probeResult = Wait-AcaResourceProvisioning -ResourceId $probeResourceId
     $createdProbe = $true
     Write-Host "Provisioning state: $($probeResult.properties.provisioningState)"
 

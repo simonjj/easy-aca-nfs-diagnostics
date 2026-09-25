@@ -72,6 +72,7 @@ if ($PSCmdlet.ShouldProcess($probeResourceId, 'Create or update ACA NFS probe jo
         '--url', $url,
         '--body', "@$resolvedOutputPath"
     )
+    $result = Wait-AcaResourceProvisioning -ResourceId $probeResourceId
 
     [pscustomobject]@{
         ProbeJobResourceId = $probeResourceId

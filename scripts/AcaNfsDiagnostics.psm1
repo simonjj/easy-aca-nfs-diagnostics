@@ -106,6 +106,40 @@ function Get-AcaResource {
     Invoke-AzJson -Arguments @('rest', '--method', 'get', '--url', $url)
 }
 
+function Wait-AcaResourceProvisioning {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string] $ResourceId,
+
+        [ValidateRange(1, 3600)]
+        [int] $TimeoutSeconds = 600,
+
+        [ValidateRange(1, 120)]
+        [int] $PollSeconds = 5
+    )
+
+    $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
+    do {
+        $resource = Get-AcaResource -ResourceId $ResourceId
+        $properties = Get-ObjectProperty -InputObject $resource -Name 'properties'
+        $state = Get-ObjectProperty -InputObject $properties -Name 'provisioningState'
+
+        if ($state -eq 'Succeeded') {
+            return $resource
+        }
+        if ($state -in @('Failed', 'Canceled', 'Cancelled')) {
+            throw "Resource provisioning reached terminal state '$state': $ResourceId"
+        }
+        if ([DateTime]::UtcNow -ge $deadline) {
+            throw "Timed out after $TimeoutSeconds seconds waiting for resource provisioning: $ResourceId"
+        }
+
+        Write-Host "Provisioning state: $state"
+        Start-Sleep -Seconds $PollSeconds
+    } while ($true)
+}
+
 function Get-AcaEnvironmentStorages {
     [CmdletBinding()]
     param(
@@ -504,6 +538,7 @@ function Get-RecentAcaJobExecutions {
 Export-ModuleMember -Function @(
     'Get-AcaJobResourceParts',
     'Get-AcaResource',
+    'Wait-AcaResourceProvisioning',
     'Get-AcaEnvironmentStorages',
     'Get-DefaultProbeJobName',
     'New-AcaNfsProbeDocument',
